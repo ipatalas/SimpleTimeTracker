@@ -6,14 +6,9 @@
 
 void Main()
 {
-	var days = 21;
-	var milliseconds = 1000 * 60 * 60 * 24 * days;
-	
-	var query = new EventLogQuery("System", PathType.LogName, $"*[System[Provider[@Name='Microsoft-Windows-Kernel-Power' or @Name='Microsoft-Windows-Power-Troubleshooter'] and (Level=4 or Level=0) and (EventID=1 or EventID=42) and TimeCreated[timediff(@SystemTime) <= {milliseconds}]]]");
-	var reader = new EventLogReader(query);
 	var calendar = new GregorianCalendar(GregorianCalendarTypes.Localized);
 
-	var events = GetEvents()
+	var events = GetEvents(21)
 		.OrderBy(x => x.TimeCreated)
 		.Select(StateChangeEvent.FromEvent)
 		.SkipWhile(x => x.Task != TaskEnum.WakingUp) // align starting point to Wake Up event
@@ -44,8 +39,13 @@ void Main()
 		return e.Start.DayOfWeek != DayOfWeek.Saturday && e.Start.DayOfWeek != DayOfWeek.Sunday;
 	}
 
-	List<EventRecord> GetEvents()
+	List<EventRecord> GetEvents(int numberOfDays)
 	{
+		var dateCondition = $"TimeCreated[@SystemTime>='{DateTime.UtcNow.AddDays(-numberOfDays).ToString("o")}']";
+
+		var query = new EventLogQuery("System", PathType.LogName, $"*[System[Provider[@Name='Microsoft-Windows-Kernel-Power' or @Name='Microsoft-Windows-Power-Troubleshooter'] and (Level=4 or Level=0) and (EventID=1 or EventID=42) and {dateCondition}]]");
+		var reader = new EventLogReader(query);
+		
 		var list = new List<EventRecord>();
 
 		var item = reader.ReadEvent();
