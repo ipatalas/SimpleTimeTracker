@@ -31,6 +31,7 @@ void Main()
 	grouped.GroupBy(x => x.WeekNo, x => x, (g, r) => new 
 	{
 		WeekNo = g,
+		NumberOfWorkingDays = r.Count(),
 		Duration = Math.Round(r.Sum(x => x.Duration), 2)
 	}).Dump();
 	
