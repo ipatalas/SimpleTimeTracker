@@ -11,6 +11,8 @@ void Main()
 	var events = GetEvents(21)
 		.OrderBy(x => x.TimeCreated)
 		.Select(StateChangeEvent.FromEvent)
+		.Concat(GetStaticEvents())
+		.OrderBy(x => x.Timestamp)
 		.SkipWhile(x => x.Task != TaskEnum.WakingUp) // align starting point to Wake Up event
 		.ChunkBy(2)
 		.Select(ComputerRunningSpan.FromEvents) // flatten paired events
@@ -38,6 +40,11 @@ void Main()
 	bool WorkDaysOnly(ComputerRunningSpan e)
 	{
 		return e.Start.DayOfWeek != DayOfWeek.Saturday && e.Start.DayOfWeek != DayOfWeek.Sunday;
+	}
+
+	IEnumerable<StateChangeEvent> GetStaticEvents()
+	{
+		yield return new StateChangeEvent() { Task = TaskEnum.WakingUp, Timestamp = DateTime.Parse("2020-03-20 09:05") };
 	}
 
 	List<EventRecord> GetEvents(int numberOfDays)
