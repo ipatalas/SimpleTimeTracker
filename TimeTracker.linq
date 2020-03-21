@@ -23,17 +23,18 @@ void Main()
 		Week = g.DayOfWeek,
 		WeekNo = calendar.GetWeekOfYear(g, CalendarWeekRule.FirstDay, DayOfWeek.Monday),
 		Duration = Math.Round(r.Sum(x => x.TotalHours), 2)
-	})
-	.Dump();
-	//.Chart(x => x.Day, y => y.Duration, LINQPad.Util.SeriesType.Column).Dump();
+	});	
 
 	grouped.GroupBy(x => x.WeekNo, x => x, (g, r) => new 
 	{
 		WeekNo = g,
-		NumberOfWorkingDays = r.Count(),
-		Duration = Math.Round(r.Sum(x => x.Duration), 2)
+		Duration = Math.Round(r.Sum(x => x.Duration), 2),
+		NumberOfDaysWorked = r.Count(), 
+		AverageHoursPerDay = Math.Round(r.Average(x => x.Duration), 2)
 	}).Dump();
 	
+	grouped.Dump();
+
 	bool WorkDaysOnly(ComputerRunningSpan e)
 	{
 		return e.Start.DayOfWeek != DayOfWeek.Saturday && e.Start.DayOfWeek != DayOfWeek.Sunday;
