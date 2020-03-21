@@ -13,7 +13,6 @@ void Main()
 		.Select(StateChangeEvent.FromEvent)
 		.SkipWhile(x => x.Task != TaskEnum.WakingUp) // align starting point to Wake Up event
 		.ChunkBy(2)
-		.TakeWhile(x => x.Count() == 2) // skip remaining unpaired wake up event
 		.Select(ComputerRunningSpan.FromEvents) // flatten paired events
 		.Where(WorkDaysOnly);
 		//.Dump();
@@ -75,14 +74,12 @@ public class ComputerRunningSpan
 
 	public static ComputerRunningSpan FromEvents(IEnumerable<StateChangeEvent> events)
 	{
-		Contract.Assert(events.Count() == 2, "Wrong number of events");
-
 		var start = events.SingleOrDefault(x => x.Task == TaskEnum.WakingUp);
 		var end = events.SingleOrDefault(x => x.Task == TaskEnum.EnteringSleep);
 
-		Contract.Assert(start != null && end != null);
+		Contract.Assert(start != null);
 
-		return new ComputerRunningSpan(start.Timestamp, end.Timestamp);
+		return new ComputerRunningSpan(start.Timestamp, end?.Timestamp ?? DateTime.Now);
 	}
 }
 
